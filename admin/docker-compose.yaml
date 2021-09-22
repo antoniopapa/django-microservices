@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  admin_backend:
+    build: .
+    command: >
+      sh -c "python manage.py wait_for_db
+      && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - 8002:8000
+    depends_on:
+      - admin_db
+    networks:
+      - admin
+      - users
+
+  admin_queue:
+    build: .
+    command: >
+      sh -c "python manage.py wait_for_db
+      && python consumer.py"
+    depends_on:
+      - admin_db
+    networks:
+      - admin
+
+  admin_db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: admin
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    networks:
+      - admin
+
+networks:
+  admin:
+  users:
+    external:
+      name: users

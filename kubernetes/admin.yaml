@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin-backend
+  name: admin-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python manage.py runserver 0.0.0.0:8000
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: DB_DATABASE
+              value: admin
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value:
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value:
+            - name: GROUP_ID
+              value: myGroup
+            - name: KAFKA_TOPIC
+              value:
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: http://users-ms:8000
+          image: antoniopapa/admin:0.0.1
+          name: admin-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin-queue
+  name: admin-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin-queue
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python consumer.py
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: DB_DATABASE
+              value: admin
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value:
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value:
+            - name: GROUP_ID
+              value: myGroup
+            - name: KAFKA_TOPIC
+              value:
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: http://users-ms:8000
+          image: antoniopapa/admin:0.0.1
+          name: admin-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: admin-backend
+  name: admin-backend
+spec:
+  ports:
+    - name: "8002"
+      port: 8002
+      targetPort: 8000
+  selector:
+    io.kompose.service: admin-backend
+
+

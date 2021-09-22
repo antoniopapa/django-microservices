@@ -1,0 +1,8 @@
+Django==3.1.7
+djangorestframework==3.12.2
+mysqlclient==2.0.3
+django-mysql==3.11.1
+django-cors-headers==3.7.0
+stripe==2.56.0
+confluent-kafka==1.7.0
+requests==2.26.0

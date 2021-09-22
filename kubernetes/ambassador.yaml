@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python manage.py runserver 0.0.0.0:8000
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: DB_DATABASE
+              value:
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value:
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value:
+            - name: GROUP_ID
+              value: myGroup
+            - name: KAFKA_TOPIC
+              value:
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: http://users-ms:8000
+          image: antoniopapa/ambassador:0.0.1
+          name: ambassador-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-queue
+  name: ambassador-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-queue
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python consumer.py
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: DB_DATABASE
+              value:
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value:
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value:
+            - name: GROUP_ID
+              value: myGroup
+            - name: KAFKA_TOPIC
+              value:
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: http://users-ms:8000
+          image: antoniopapa/ambassador:0.0.1
+          name: ambassador-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  ports:
+    - name: "8003"
+      port: 8003
+      targetPort: 8000
+  selector:
+    io.kompose.service: ambassador-backend
+

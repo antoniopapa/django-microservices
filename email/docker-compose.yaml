@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  email_backend:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      BOOTSTRAP_SERVERS: pkc-4ygn6.europe-west3.gcp.confluent.cloud:9092
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME: 6567MKPS6YFGEMJH
+      SASL_PASSWORD: zaf8YnUY/BzmTpNk6TFC+wJQQ0YoQdvmwfRQTRtRo19YZChYEev2Wkx+rG3Two2h
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: myGroup
+      KAFKA_TOPIC: email_topic
+      EMAIL_HOST: smtp.mailtrap.io
+      EMAIL_PORT: 2525
+      EMAIL_USERNAME: 812ec0b3a0e7c9
+      EMAIL_PASSWORD: b8f923491c2570

@@ -1,0 +1,17 @@
+version: '3'
+services:
+  email_backend:
+    build: .
+    image: antoniopapa/email:0.0.1
+    environment:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: myGroup
+      KAFKA_TOPIC:
+      EMAIL_HOST:
+      EMAIL_PORT:
+      EMAIL_USERNAME:
+      EMAIL_PASSWORD:

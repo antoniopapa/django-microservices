@@ -1,0 +1,49 @@
+version: '3'
+services:
+  checkout_backend:
+    build: .
+    image: antoniopapa/checkout:0.0.1
+    environment:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: myGroup
+      KAFKA_TOPIC:
+      DB_HOST:
+      DB_DATABASE:
+      DB_PORT: 3306
+      DB_USERNAME:
+      DB_PASSWORD:
+      USERS_MS: http://users-ms:8000
+      STRIPE_KEY:
+      CHECKOUT_URL: http://localhost:5000
+    command: >
+      sh -c "python manage.py wait_for_db
+      && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8004:8000
+
+  checkout_queue:
+    build: .
+    image: antoniopapa/checkout:0.0.1
+    environment:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: myGroup
+      KAFKA_TOPIC:
+      DB_HOST:
+      DB_DATABASE:
+      DB_PORT: 3306
+      DB_USERNAME:
+      DB_PASSWORD:
+      USERS_MS: http://users-ms:8000
+      STRIPE_KEY:
+      CHECKOUT_URL: http://localhost:5000
+    command: >
+      sh -c "python manage.py wait_for_db
+      && python consumer.py"
